@@ -39,7 +39,7 @@ def main():
             MitarbeiterTestEUAIAct().build_tab()
             PdfScanTab().build_tab()
             AgentConversationTab().build_tab() # Füge den AgentConversationTab hier hinzu!
-    demo.launch(share=True)
+    demo.launch(share=False, server_name="0.0.0.0", server_port=666)
 
 if __name__ == "__main__":
     main()
