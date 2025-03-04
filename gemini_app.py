@@ -16,8 +16,7 @@ import logging
 import tempfile
 from PIL import Image, ImageEnhance, UnidentifiedImageError
 from dotenv import load_dotenv
-import google.generativeai as genai
-
+from google import genai
 from google.genai import types
 from openai import OpenAI # Expliziter Import von OpenAI Client
 import requests
@@ -73,12 +72,12 @@ if OPENAI_API_KEY is None:
 # -------------------------------------------------------------------------------
 # Initialisierung des Gemini Clients und OpenAI API-Key
 # -------------------------------------------------------------------------------
-genai.configure(api_key=API_KEY) # Konfiguration der Gemini API mit dem API-Key - **NEU!**
-client_gemini = genai.GenerativeModel(model_name="gemini-2.0-flash-thinking-exp-01-21") # Gemini Client behalten, falls benötigt, korrekte Initialisierung für Gemini API, API-Key wird jetzt HIER übergeben
+client = genai.Client(api_key=API_KEY)
 logger.info("Gemini Client initialisiert.")
 client_openai = OpenAI(api_key=OPENAI_API_KEY) # OpenAI Client initialisieren für DALL-E, korrekte Initialisierung für OpenAI API
 
-sys_instruct = "Du bist Cipher ein Assistent unseres Unterhemens CipherCore, wir stehen für Sicherheit in der Programmierung. Deine Antworten immer in Deutsch! Erwähne niemals die beigefügte Textdatei!."
+
+sys_instruct = "Du bist Cipher ein Assistent unseres Untermehmens CipherCore, wir stehen für Sicherheit in der Programmierung. Deine Antworten immer in Deutsch! Erwähne niemals die beigefügte Textdatei!."
 
 
 # -------------------------------------------------------------------------------
@@ -95,9 +94,10 @@ class GeminiApp:
         """
         Initialisiert die GeminiApp mit dem Gemini Client und dem ausgewählten Gerät.
         """
-        self.client_gemini = client_gemini # Verwende Gemini Client für Gemini Funktionen, korrekter Client Name
-        self.client_openai = client_openai # OpenAI Client für DALL-E, korrekter Client Name
+        self.client = client
         self.device = device
+        self.client_openai = client_openai # OpenAI Client für DALL-E, korrekter Client Name
+        
 
     def generate_dalle_image(self, prompt: str = "a white siamese cat", size: str = "576x1024") -> Optional[Image.Image]:
         """
@@ -121,9 +121,11 @@ class GeminiApp:
             logger.exception("Fehler bei der DALL·E Bildgenerierung:")
             return None
 
+
+
     def validate_prompt(self, prompt: str) -> bool:
         """
-        Validiert die Länge des Prompts.  Um Eingabevalidierung zu gewährleisten und Injection-Angriffe zu verhindern.
+        Validiert die Länge des Prompts.
         """
         if len(prompt) > 1000000:
             raise ValueError("Der Prompt ist zu lang. Bitte maximal 1000000 Zeichen verwenden.")
@@ -131,7 +133,7 @@ class GeminiApp:
 
     def validate_file_size(self, file_path: str, max_size: int) -> bool:
         """
-        Validiert die Dateigröße.  Um Denial-of-Service-Angriffe durch übermäßig große Dateien zu verhindern.
+        Validiert die Dateigröße.
         """
         file_size = os.path.getsize(file_path)
         if file_size > max_size:
@@ -165,7 +167,7 @@ class GeminiApp:
             mime_type = mime_map.get(ext, "audio/mp3")
             logger.debug(f"Verwendeter MIME-Typ: {mime_type}")
             audio_part = types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
-            response = self.client_gemini.generate_content( # Hier wieder Gemini Client verwenden, korrekter Client Name
+            response = self.client.models.generate_content(
                 model='gemini-2.0-flash-thinking-exp-01-21',
                 contents=[sys_instruct, prompt, audio_part]
             )
@@ -216,7 +218,7 @@ class GeminiApp:
                     mime_type = mime_map.get(ext, "image/jpeg")
                     contents.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
                     logger.debug(f"Bild als Part-Objekt hinzugefügt (MIME-Typ: {mime_type}).")
-            response = self.client_gemini.generate_content( # Hier wieder Gemini Client verwenden, korrekter Client Name
+            response = self.client.models.generate_content(
                 model='gemini-2.0-flash-thinking-exp-01-21',
                 contents=contents
             )
@@ -259,8 +261,8 @@ class GeminiApp:
             mime_type = mime_map.get(ext, "video/mp4")
             logger.debug(f"Verwendeter MIME-Typ für Video: {mime_type}")
             video_part = types.Part.from_bytes(data=video_bytes, mime_type=mime_type)
-            response = self.client_gemini.generate_content( # Hier wieder Gemini Client verwenden, korrekter Client Name
-                model='gemini-2.0-flash-thinking-exp-01-21',
+            response = self.client.models.generate_content(
+                model='gemini-2.0-flash',
                 contents=[sys_instruct, prompt, video_part]
             )
             logger.info("Anfrage(Video) gesendet.")
@@ -330,7 +332,7 @@ class GeminiApp:
             logger.debug(f"Verwendeter MIME-Typ für Datei: {mime_type}")
 
             contents = [prompt, types.Part.from_bytes(data=file_bytes, mime_type=mime_type)]
-            response = self.client_gemini.generate_content( # Hier wieder Gemini Client verwenden, korrekter Client Name
+            response = self.client.models.generate_content(
                 model='gemini-2.0-flash-thinking-exp-01-21',
                 contents=contents
             )
@@ -351,8 +353,9 @@ class GeminiApp:
         """
         try:
             self.validate_prompt(prompt)
-            response = self.client_gemini.generate_content( # Hier wieder Gemini Client verwenden, korrekter Client Name
-                contents=[sys_instruct, prompt] # Entferne 'model=' Argument hier!
+            response = self.client.models.generate_content(
+                model='gemini-2.0-flash-thinking-exp-01-21',
+                contents=[prompt]
             )
             content_text = response.text
             logger.info("Inhalt erstellt.")
@@ -393,7 +396,7 @@ class GeminiApp:
 
     def extract_main_colors(self, image: Image.Image) -> List[Tuple[int, int, int]]:
         """
-        Extrahiert die Hauptfarben aus einem Bild.  Wichtig für die Bildanalyse und -transformation.
+        Extrahiert die Hauptfarben aus einem Bild.
         """
         try:
             image_array = np.array(image)
@@ -413,7 +416,7 @@ class GeminiApp:
 
     def create_neural_network(self, main_colors: List[Tuple[int, int, int]]) -> List['Node']:
         """
-        Erstellt ein einfaches neuronales Netzwerk basierend auf den Hauptfarben.  Grundlage für die Bildtransformation.
+        Erstellt ein einfaches neuronales Netzwerk basierend auf den Hauptfarben.
         """
         color_labels = ["Rot", "Grün", "Blau", "Gelb", "Cyan", "Magenta", "Orange", "Violett", "Braun", "Rosa", "Schwarz", "Weiß"]
         category_nodes = [Node(label) for label in color_labels]
@@ -425,7 +428,7 @@ class GeminiApp:
 
     def save_image(self, image_tensor: torch.Tensor, filename: str, resolution: str, original_size: Optional[Tuple[int, int]] = None) -> None:
         """
-        Speichert ein Bild mit der angegebenen Auflösung.  Sichere Speicherung und Formatwahl sind wichtig.
+        Speichert ein Bild mit der angegebenen Auflösung.
         """
         try:
             resolutions = {
@@ -474,7 +477,7 @@ class GeminiApp:
 
     def sharpen_image(self, image: Image.Image) -> Image.Image:
         """
-        Schärft ein Bild.  Verbessert die Bildqualität.
+        Schärft ein Bild.
         """
         try:
             enhancer = ImageEnhance.Sharpness(image)
@@ -485,7 +488,7 @@ class GeminiApp:
 
     def match_histogram(self, source: Image.Image, template: Image.Image) -> Image.Image:
         """
-        Passt das Histogramm eines Bildes an ein anderes an.  Für konsistente Bildstile.
+        Passt das Histogramm eines Bildes an ein anderes an.
         """
         try:
             source = cv2.cvtColor(np.array(source), cv2.COLOR_RGB2LAB).astype("float32")
@@ -505,7 +508,7 @@ class GeminiApp:
 
     def calculate_brightness(self, image: Image.Image) -> float:
         """
-        Berechnet die durchschnittliche Helligkeit eines Bildes.  Wichtig für die Bildanalyse.
+        Berechnet die durchschnittliche Helligkeit eines Bildes.
         """
         try:
             image_array = np.array(image).astype(float)
@@ -517,7 +520,7 @@ class GeminiApp:
 
     def calculate_contrast(self, image: Image.Image) -> float:
         """
-        Berechnet den Kontrast eines Bildes.  Wichtig für die Bildanalyse.
+        Berechnet den Kontrast eines Bildes.
         """
         try:
             image_array = np.array(image).astype(float)
@@ -602,7 +605,7 @@ class GeminiApp:
 
     def process_inputs(self, image: Optional[Image.Image], brightness: float, contrast: float, resolution: str) -> Tuple[Optional[Image.Image], Optional[str]]:
         """
-        Verarbeitet die Eingabeparameter für die Bildgenerierung.  Sicherstellen, dass Eingaben korrekt behandelt werden.
+        Verarbeitet die Eingabeparameter für die Bildgenerierung.
         """
         try:
             if image is not None:
@@ -615,7 +618,7 @@ class GeminiApp:
 
     def load_image_from_file(self, file_path: str) -> Optional[Image.Image]:
         """
-        Lädt ein Bild aus einer Datei.  Dateizugriff muss sicher sein.
+        Lädt ein Bild aus einer Datei.
         """
         try:
             if os.path.exists(file_path):
