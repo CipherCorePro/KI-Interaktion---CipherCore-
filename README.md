@@ -1,4 +1,5 @@
 # KI Interaktion - CipherCore 🤖🔒
+![logo](https://github.com/user-attachments/assets/c452f511-d23e-45c0-ac1e-826f301226a8)
 
 [![Gradio App](https://img.shields.io/badge/Gradio-App-orange)](https://gradio.app)
 [![Python](https://img.shields.io/badge/Python-3.9+-blue)](https://www.python.org/downloads/)
