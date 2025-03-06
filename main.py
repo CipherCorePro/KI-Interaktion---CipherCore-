@@ -20,6 +20,7 @@ from tabs.tab_training import TrainingTabs
 from tabs.tab_mitarbeitertest import MitarbeiterTestEUAIAct
 from tabs.tab_pdf_scan import PdfScanTab
 from tabs.tab_agent_convo import AgentConversationTab # Importiere den neuen Tab!
+from tabs.tab_prompt_optimization import PromptOptimizationTab # Importiere den PromptOptimizationTab!
 
 
 def main():
@@ -33,12 +34,14 @@ def main():
             VideoTab(app).build_tab()
             FileTab(app).build_tab()
             CreateTab(app).build_tab()
+            AgentConversationTab().build_tab() 
+            PromptOptimizationTab(app).build_tab() 
             DalleTab(app).build_tab()
             InfoTab().build_tab()
             TrainingTabs().build_tab()
             MitarbeiterTestEUAIAct().build_tab()
             PdfScanTab().build_tab()
-            AgentConversationTab().build_tab() # Füge den AgentConversationTab hier hinzu!
+
     demo.launch(share=False, server_name="0.0.0.0", server_port=666)
 
 if __name__ == "__main__":
