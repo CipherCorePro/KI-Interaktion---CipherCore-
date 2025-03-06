@@ -24,6 +24,7 @@ Die Anwendung ist modular aufgebaut und bietet verschiedene Modi der KI-Interakt
 *   **✅ Mitarbeitertest EU AI Act:**  Überprüfen Sie Ihr Wissen zum EU AI Act mit einem interaktiven Test.  Seien Sie compliant!
 *   **🛡️ PDF Sicherheitsprüfung:**  Scannen Sie PDF-Dateien auf potenziell gefährliche Inhalte, um Ihre Dokumente sicher zu halten.  Sicherheit geht vor!
 *   **🤝 Agenten-Konversation:**  Starten Sie Diskussionen zwischen verschiedenen KI-Agenten zu einem bestimmten Thema und beobachten Sie die vielfältigen Perspektiven.
+*   **✨ KI-Prompt-Optimierung:**  Verbessern Sie Ihre KI-Prompts mit Google Gemini! Geben Sie Ihren Prompt ein, wählen Sie einen Optimierungsstil (z.B. Professionell, Kreativ) und lassen Sie Gemini Ihren Prompt optimieren.  Ideal, um bessere Ergebnisse von KI-Modellen zu erzielen. Exportieren Sie die optimierten Prompts im Markdown-Format.
 
 ## 🔒 Sicherheitsfokus von CipherCore
 
@@ -109,6 +110,13 @@ Nach dem Start der Anwendung können Sie über die Tabs am oberen Rand zwischen 
 **Mitarbeiterschulung Tab:**
 
 *   Nutzen Sie die umfassenden Schulungsmaterialien zu verschiedenen KI-Themen, um Ihr Wissen und das Ihrer Mitarbeiter zu erweitern.
+
+**KI-Prompt-Optimierung Tab:**
+
+*   Verwenden Sie den "KI-Prompt-Optimierung" Tab, um Ihre Prompts für eine effektivere KI-Interaktion zu optimieren.
+*   Geben Sie Ihren ursprünglichen Prompt ein und wählen Sie einen Optimierungsstil (z.B. "Professionell", "Kreativ", "Wissenschaftlich").
+*   Lassen Sie Google Gemini Ihren Prompt verbessern und analysieren Sie den optimierten Prompt.
+*   Exportieren Sie den optimierten Prompt im Markdown-Format für die weitere Verwendung.
 
 ## 🤝 Beiträge
 
